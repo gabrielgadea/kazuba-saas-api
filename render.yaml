@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: kazuba-saas-api
+    runtime: docker
+    repo: https://github.com/gabrielgadea/kazuba-saas-api
+    branch: main
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kazuba-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: kazuba-redis
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        value: https://kazuba.com.br
+    healthCheckPath: /health
+
+  - type: redis
+    name: kazuba-redis
+    ipAllowList: []
+
+databases:
+  - name: kazuba-postgres
+    databaseName: kazuba_saas
+    user: kazuba
+    plan: free
