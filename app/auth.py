@@ -1,15 +1,17 @@
 """Authentication and API key management."""
 
 from fastapi import HTTPException, status, Depends
-from fastapi.security import HTTPAuthorizationCredentials
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.config import settings
 
+security = HTTPBearer()
+
 
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db)
 ) -> dict:
     """

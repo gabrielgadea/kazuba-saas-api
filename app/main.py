@@ -5,9 +5,8 @@ FastAPI application with authentication, rate limiting, and Stripe integration.
 
 import time
 import os
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
@@ -15,6 +14,7 @@ from app.config import settings
 from app.database import engine, Base
 from app.auth import get_current_user
 from app.stripe_routes import router as stripe_router
+from app.convert import convert_document
 
 # Create tables with retry logic for Railway deploy
 def init_db(max_retries=5, delay=2):
@@ -30,7 +30,6 @@ def init_db(max_retries=5, delay=2):
                 time.sleep(delay)
             else:
                 print("❌ Failed to connect to database after all retries")
-                # Don't raise - let app start anyway, migrations will handle it
                 return False
 
 # Initialize DB (but don't block startup)
@@ -61,8 +60,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-security = HTTPBearer()
-
 
 @app.get("/")
 async def root():
@@ -85,37 +82,49 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    """Health check endpoint for monitoring."""
+    return {
+        "status": "healthy",
+        "database": "connected" if db_ready else "disconnected",
+        "version": "0.1.0"
+    }
 
 
 @app.post("/convert")
 async def convert(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    file: UploadFile = File(...),
+    output_format: str = "markdown",
     user: dict = Depends(get_current_user),
 ):
     """
     Convert a document to structured format.
-    Requires valid API key and respects rate limits.
+    
+    - **file**: Document to convert (PDF, DOCX, TXT, MD)
+    - **output_format**: Desired output format (markdown, text)
+    - Requires valid API key (Bearer token)
+    - Respects rate limits based on user tier
+    
+    Returns converted document content.
     """
-    # Apply rate limiting manually to handle errors properly
+    # Apply rate limiting
     from app.rate_limit import rate_limit
     try:
         rate_limit(user)
     except HTTPException:
         raise
     
-    # TODO: Implement actual conversion using kazuba-converter
-    return {
-        "status": "success",
-        "message": "Document conversion endpoint (WIP)",
-        "user_tier": user.get("tier", "free"),
-        "requests_remaining": user.get("requests_remaining", 0)
-    }
+    # Convert document
+    result = await convert_document(file, output_format)
+    
+    # Add user info to response
+    result["user_tier"] = user.get("tier", "free")
+    result["requests_remaining"] = user.get("requests_remaining", 0)
+    
+    return result
 
 
 @app.get("/usage")
 async def get_usage(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
     user: dict = Depends(get_current_user)
 ):
     """Get current usage statistics for the authenticated user."""
@@ -125,4 +134,22 @@ async def get_usage(
         "requests_limit": user.get("requests_limit", 50),
         "docs_this_month": user.get("docs_this_month", 0),
         "docs_limit": user.get("docs_limit", 100),
+        "requests_remaining": user.get("requests_remaining", 50),
+    }
+
+
+@app.get("/formats")
+async def get_supported_formats():
+    """Get list of supported input and output formats."""
+    return {
+        "input_formats": [
+            {"type": "application/pdf", "extension": ".pdf", "description": "PDF documents"},
+            {"type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "extension": ".docx", "description": "Microsoft Word documents"},
+            {"type": "text/plain", "extension": ".txt", "description": "Plain text files"},
+            {"type": "text/markdown", "extension": ".md", "description": "Markdown files"},
+        ],
+        "output_formats": [
+            {"format": "markdown", "description": "Markdown with metadata header"},
+            {"format": "text", "description": "Plain text extraction"},
+        ]
     }

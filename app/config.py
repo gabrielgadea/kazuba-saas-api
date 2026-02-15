@@ -7,10 +7,10 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
     
     # Database
-    DATABASE_URL: str = "postgresql://user:pass@localhost/kazuba_saas"
+    DATABASE_URL: str = "postgresql://kazuba:kazuba@db:5432/kazuba_saas"
     
     # Redis
-    REDIS_URL: str = "redis://localhost:6379"
+    REDIS_URL: str = "redis://redis:6379"
     
     # Security
     SECRET_KEY: str = "change-me-in-production"

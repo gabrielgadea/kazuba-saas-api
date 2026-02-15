@@ -29,3 +29,4 @@ dmypy.json
 *.db
 *.sqlite3
 test.db
+__pycache__/
