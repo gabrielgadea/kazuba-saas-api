@@ -10,7 +10,6 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.config import settings
 from app.database import engine, Base
 from app.auth import get_current_user
-from app.rate_limit import rate_limit
 from app.convert import convert_document
 
 # Create tables
@@ -59,12 +58,18 @@ async def health_check():
 async def convert(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     user: dict = Depends(get_current_user),
-    _: None = Depends(rate_limit)
 ):
     """
     Convert a document to structured format.
     Requires valid API key and respects rate limits.
     """
+    # Apply rate limiting manually to handle errors properly
+    from app.rate_limit import rate_limit
+    try:
+        rate_limit(user)
+    except HTTPException:
+        raise
+    
     # TODO: Implement actual conversion using kazuba-converter
     return {
         "status": "success",
