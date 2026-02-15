@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kazuba Converter API — Documentos para LLMs</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #fafafa;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 100px 0;
+            text-align: center;
+        }
+        .hero h1 { font-size: 3rem; margin-bottom: 20px; }
+        .hero p { font-size: 1.25rem; opacity: 0.9; margin-bottom: 30px; }
+        .cta-button {
+            display: inline-block;
+            background: #fff;
+            color: #667eea;
+            padding: 15px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        .cta-button:hover { transform: translateY(-2px); }
+        
+        /* Features */
+        .features { padding: 80px 0; background: white; }
+        .features h2 { text-align: center; font-size: 2rem; margin-bottom: 50px; }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+        .feature {
+            text-align: center;
+            padding: 30px;
+        }
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        .feature h3 { font-size: 1.25rem; margin-bottom: 10px; }
+        .feature p { color: #666; }
+        
+        /* Pricing */
+        .pricing { padding: 80px 0; background: #f8f9fa; }
+        .pricing h2 { text-align: center; font-size: 2rem; margin-bottom: 50px; }
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .pricing-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: transform 0.2s;
+        }
+        .pricing-card:hover { transform: translateY(-5px); }
+        .pricing-card.featured {
+            border: 2px solid #667eea;
+            transform: scale(1.05);
+        }
+        .pricing-card.featured:hover { transform: scale(1.05) translateY(-5px); }
+        .tier-name { font-size: 1.5rem; font-weight: 600; margin-bottom: 10px; }
+        .tier-price { font-size: 3rem; font-weight: 700; color: #667eea; margin-bottom: 20px; }
+        .tier-price span { font-size: 1rem; color: #666; }
+        .tier-features { list-style: none; margin-bottom: 30px; }
+        .tier-features li { padding: 10px 0; border-bottom: 1px solid #eee; }
+        .tier-button {
+            display: block;
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .tier-button:hover { background: #5568d3; }
+        .tier-button.outline {
+            background: transparent;
+            border: 2px solid #667eea;
+            color: #667eea;
+        }
+        
+        /* Code Example */
+        .code-section { padding: 80px 0; background: #1a1a2e; color: white; }
+        .code-section h2 { text-align: center; font-size: 2rem; margin-bottom: 30px; }
+        .code-block {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 700px;
+            margin: 0 auto;
+            overflow-x: auto;
+        }
+        .code-block pre { font-family: 'Fira Code', monospace; font-size: 0.9rem; }
+        .code-block .comment { color: #6272a4; }
+        .code-block .string { color: #f1fa8c; }
+        .code-block .keyword { color: #ff79c6; }
+        
+        /* Footer */
+        footer { padding: 40px 0; text-align: center; color: #666; }
+        footer a { color: #667eea; }
+    </style>
+</head>
+<body>
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <h1>🚀 Kazuba Converter API</h1>
+            <p>Transforme PDFs, DOCXs e mais em Markdown estruturado para LLMs.<br>
+               API rápida, escalável e pronta para produção.</p>
+            <a href="#pricing" class="cta-button">Começar Grátis →</a>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features">
+        <div class="container">
+            <h2>Por que usar a API?</h2>
+            <div class="feature-grid">
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Ultra Rápido</h3>
+                    <p>Processamento paralelo com workers persistentes. 10-50x mais rápido que soluções tradicionais.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎯</div>
+                    <h3>OCR Nativo PT-BR</h3>
+                    <p>PaddleOCR otimizado para documentos brasileiros. Extração precisa de texto em imagens.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <h3>Tabelas com ML</h3>
+                    <p>Extração de tabelas com 97.9% accuracy usando Docling e Table Transformer.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Seguro & Escalável</h3>
+                    <p>Rate limiting, autenticação JWT, e infraestrutura cloud-ready.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">💰</div>
+                    <h3>Custo Zero vs Cloud</h3>
+                    <p>Economize ~$180K/ano em APIs de conversão. Pague apenas pelo que usar.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🛠️</div>
+                    <h3>Developer First</h3>
+                    <p>SDK Python, documentação OpenAPI, e exemplos prontos.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <h2>Preços Simples</h2>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="tier-name">Free</div>
+                    <div class="tier-price">R$ 0<span>/mês</span></div>
+                    <ul class="tier-features">
+                        <li>50 requisições/dia</li>
+                        <li>100 documentos/mês</li>
+                        <li>OCR básico</li>
+                        <li>Suporte comunidade</li>
+                    </ul>
+                    <a href="/docs" class="tier-button outline">Começar</a>
+                </div>
+                <div class="pricing-card featured">
+                    <div class="tier-name">Hobby</div>
+                    <div class="tier-price">R$ 29<span>/mês</span></div>
+                    <ul class="tier-features">
+                        <li>500 requisições/dia</li>
+                        <li>5.000 documentos/mês</li>
+                        <li>OCR avançado + tabelas</li>
+                        <li>API key dedicada</li>
+                        <li>Suporte email</li>
+                    </ul>
+                    <a href="/stripe/create-checkout-session?tier=hobby" class="tier-button">Assinar</a>
+                </div>
+                <div class="pricing-card">
+                    <div class="tier-name">Pro</div>
+                    <div class="tier-price">R$ 149<span>/mês</span></div>
+                    <ul class="tier-features">
+                        <li>5.000 requisições/dia</li>
+                        <li>50.000 documentos/mês</li>
+                        <li>OCR GPU + tabelas ML</li>
+                        <li>Múltiplas API keys</li>
+                        <li>Suporte prioritário</li>
+                        <li>SLA 99.9%</li>
+                    </ul>
+                    <a href="/stripe/create-checkout-session?tier=pro" class="tier-button outline">Assinar</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Code Example -->
+    <section class="code-section">
+        <div class="container">
+            <h2>Comece em 5 minutos</h2>
+            <div class="code-block">
+                <pre><span class="comment"># Instalar SDK</span>
+$ pip install kazuba-api
+
+<span class="comment"># Converter documento</span>
+<span class="keyword">from</span> kazuba <span class="keyword">import</span> Client
+
+client = Client(api_key=<span class="string">"kzb_live_..."</span>)
+result = client.convert(<span class="string">"documento.pdf"</span>)
+
+<span class="keyword">print</span>(result.markdown)  <span class="comment"># ✅ Markdown estruturado</span>
+<span class="keyword">print</span>(result.tables)    <span class="comment"># 📊 Tabelas extraídas</span></pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>© 2026 Kazuba. Código aberto em <a href="https://github.com/gabrielgadea/kazuba-saas-api">GitHub</a>.</p>
+            <p>Documentação: <a href="/docs">/docs</a> | API: <a href="/redoc">/redoc</a></p>
+        </div>
+    </footer>
+</body>
+</html>

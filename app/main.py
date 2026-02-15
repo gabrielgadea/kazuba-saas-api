@@ -4,13 +4,17 @@ FastAPI application with authentication, rate limiting, and Stripe integration.
 """
 
 import time
+import os
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from app.config import settings
 from app.database import engine, Base
 from app.auth import get_current_user
+from app.stripe_routes import router as stripe_router
 
 # Create tables with retry logic for Railway deploy
 def init_db(max_retries=5, delay=2):
@@ -40,10 +44,18 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
+# Include Stripe routes
+app.include_router(stripe_router)
+
+# Mount static files (landing page)
+landing_path = os.path.join(os.path.dirname(__file__), "..", "landing")
+if os.path.exists(landing_path):
+    app.mount("/static", StaticFiles(directory=landing_path), name="static")
+
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.FRONTEND_URL],
+    allow_origins=[settings.FRONTEND_URL, "https://kazuba.com.br", "http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -54,6 +66,11 @@ security = HTTPBearer()
 
 @app.get("/")
 async def root():
+    """Serve landing page if available, otherwise return API info."""
+    landing_file = os.path.join(landing_path, "index.html")
+    if os.path.exists(landing_file):
+        return FileResponse(landing_file)
+    
     return {
         "name": "Kazuba Converter SaaS API",
         "version": "0.1.0",
