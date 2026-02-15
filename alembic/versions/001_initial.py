@@ -12,18 +12,25 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # Create enum type
-    user_tier = postgresql.ENUM('free', 'hobby', 'pro', 'enterprise', name='usertier')
-    user_tier.create(op.get_bind())
+    # Create enum type using DO block for idempotency
+    op.execute("""
+        DO $$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'usertier') THEN
+                CREATE TYPE usertier AS ENUM ('free', 'hobby', 'pro', 'enterprise');
+            END IF;
+        END
+        $$;
+    """)
     
-    # Create users table
+    # Create users table - use native_enum=False to avoid SQLAlchemy trying to create the enum
     op.create_table(
         'users',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('email', sa.String(), nullable=False),
         sa.Column('stripe_customer_id', sa.String(), nullable=True),
         sa.Column('stripe_subscription_id', sa.String(), nullable=True),
-        sa.Column('tier', sa.Enum('free', 'hobby', 'pro', 'enterprise', name='usertier'), nullable=True),
+        sa.Column('tier', sa.Enum('free', 'hobby', 'pro', 'enterprise', name='usertier', native_enum=False), nullable=True),
         sa.Column('is_active', sa.Boolean(), nullable=True),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
         sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
@@ -76,6 +83,5 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_users_email'), table_name='users')
     op.drop_table('users')
     
-    # Drop enum type
-    user_tier = postgresql.ENUM('free', 'hobby', 'pro', 'enterprise', name='usertier')
-    user_tier.drop(op.get_bind())
+    # Drop enum type using raw SQL
+    op.execute("DROP TYPE IF EXISTS usertier")
