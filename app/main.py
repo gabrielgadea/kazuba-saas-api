@@ -3,6 +3,7 @@ Kazuba Converter SaaS API
 FastAPI application with authentication, rate limiting, and Stripe integration.
 """
 
+import time
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -10,10 +11,26 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.config import settings
 from app.database import engine, Base
 from app.auth import get_current_user
-from app.convert import convert_document
 
-# Create tables
-Base.metadata.create_all(bind=engine)
+# Create tables with retry logic for Railway deploy
+def init_db(max_retries=5, delay=2):
+    """Initialize database with retry logic for cloud deployments."""
+    for attempt in range(max_retries):
+        try:
+            Base.metadata.create_all(bind=engine)
+            print("✅ Database initialized successfully")
+            return True
+        except Exception as e:
+            print(f"⚠️  DB connection attempt {attempt + 1}/{max_retries} failed: {e}")
+            if attempt < max_retries - 1:
+                time.sleep(delay)
+            else:
+                print("❌ Failed to connect to database after all retries")
+                # Don't raise - let app start anyway, migrations will handle it
+                return False
+
+# Initialize DB (but don't block startup)
+db_ready = init_db()
 
 app = FastAPI(
     title="Kazuba Converter SaaS API",
